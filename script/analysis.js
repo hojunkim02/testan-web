@@ -1,22 +1,5 @@
 "use strict";
 
-/**
- * 고전검사이론(CTT) 문항분석 엔진.
- * 공식은 성태제(2000) TestAn 1.0 매뉴얼을 따르고, 실습용 지표(추측도·교정난이도·수정변별도)를 더한다.
- *
- * 데이터 모델
- *   nItems      문항 수
- *   key[j]      정답 ("1"~"9", 미입력 " ")
- *   numOptions  답지 수 Q
- *   scored[j]   분석 포함 여부
- *   weights[j]  배점 (기본 1)
- *   students    [{ id, resp: ["1".."9" | " "] }]
- *
- * 응답 처리 (TestAn과 동일): 1~Q 사이의 응답만 답지 응답으로 보고,
- * 무응답과 답지 범위를 벗어난 응답은 '기타'로 집계한다.
- *
- * 수학 공식 자체는 script/formulas.js에 별도로 분리해 두었다.
- */
 const {
   pearson,
   pointBiserial,
@@ -72,7 +55,6 @@ const analyze = (data) => {
     }
   }
 
-  /** 응답 r이 문항 j의 답지(1~Q) 범위 안에 있는가 */
   const isValid = (r, j) => {
     if (!r || r === " ") return false;
     const Q = numOptions[j] || 0;
@@ -80,12 +62,11 @@ const analyze = (data) => {
     const v = Number(r);
     return Number.isInteger(v) && v >= 1 && v <= Q;
   };
-  /** 답지 라벨: 1~Q는 그대로, 나머지는 '기타' */
+
   const labelOf = (r, j) => (isValid(r, j) ? String(Number(r)) : "기타");
 
-  // 1차 순환: 채점, 문항별 ΣX·ΣX², 답지별 응답 수
-  const R = new Uint32Array(nItems); // 정답자 수
-  const V = new Uint32Array(nItems); // 답지 범위 안의 응답자 수
+  const R = new Uint32Array(nItems);
+  const V = new Uint32Array(nItems);
   const sX = new Float64Array(nItems);
   const sX2 = new Float64Array(nItems);
   const opts = Array.from({ length: nItems }, (_, j) => {
@@ -139,17 +120,11 @@ const analyze = (data) => {
     if (Y > maxS) maxS = Y;
   }
 
-  // 석차 (동점자는 같은 순위)
   const sorted = [...students].sort((a, b) => b.raw - a.raw);
   sorted.forEach((s, i) => {
     s.rank = i > 0 && s.raw === sorted[i - 1].raw ? sorted[i - 1].rank : i + 1;
   });
 
-  // 상·하위 27% 집단 (TestAn 1.0 출력 4건으로 확인한 규칙)
-  //   점수를 같은 점수끼리 묶어 위(아래)부터 차례로 넣는다.
-  //   어떤 점수 묶음의 가운데(앞서 넣은 인원 + 묶음 인원의 절반)가 N × .27보다 작으면 그 묶음을 넣고, 아니면 멈춘다.
-  //   = 동점 묶음 경계 가운데 27%에 가장 가까운 곳에서 자른다. 그래서 집단 인원이 27%보다 많거나 적을 수 있다.
-  //   묶음이 하나도 들어가지 않으면(맨 위 점수에 27%의 두 배 넘게 몰린 경우) 그 첫 묶음만 넣는다 (TestAn 미확인).
   const T = N * 0.27;
   const freqMap = new Map();
   students.forEach((s) => freqMap.set(s.raw, (freqMap.get(s.raw) ?? 0) + 1));
@@ -166,10 +141,9 @@ const analyze = (data) => {
     return edge;
   };
   const distinct = [...freqMap.keys()].sort((a, b) => b - a);
-  const upperCut = pickGroup(distinct); // 상위: 이 점수 이상
-  const lowerCut = pickGroup([...distinct].reverse()); // 하위: 이 점수 이하
+  const upperCut = pickGroup(distinct);
+  const lowerCut = pickGroup([...distinct].reverse());
 
-  // 2차 순환: ΣXY, 상·하위 집계, 왜도·첨도 모멘트
   const sXY = new Float64Array(nItems);
   const cU = new Uint32Array(nItems);
   const cL = new Uint32Array(nItems);
@@ -209,7 +183,7 @@ const analyze = (data) => {
     }
   }
 
-  const sd = populationSd(sY2, meanY, N); // 모집단 표준편차 (매뉴얼)
+  const sd = populationSd(sY2, meanY, N);
   const sX2sample = sampleVariance(sY, sY2, N);
   const scale = N / (N - 1 || 1);
 
@@ -219,7 +193,7 @@ const analyze = (data) => {
     const P = itemDifficulty(R[j], N);
     const Q = numOptions[j] || 0;
     const keyLab = key[j] && key[j] !== " " ? String(Number(key[j])) : "";
-    const W = V[j] - R[j]; // 오답자: 답지 범위 안에서 정답이 아닌 답지를 고른 피험자 (무응답·기타 제외)
+    const W = V[j] - R[j];
     const guessing = scored[j] ? guessingRate(W, Q, N) : 0;
     const it = {
       index: j + 1,
@@ -228,7 +202,7 @@ const analyze = (data) => {
       numOptions: Q,
       correct: R[j],
       wrong: W,
-      other: N - V[j], // 기타 (무응답 + 범위 밖 응답)
+      other: N - V[j],
       difficulty: P,
       guessing,
       correctedDifficulty: correctedDifficulty(P, guessing),
@@ -263,7 +237,7 @@ const analyze = (data) => {
         })),
     };
     it.options.forEach((o) => {
-      // 부동소수 오차로 같은 값이 "크다"로 판정되지 않도록 허용오차를 둔다
+
       o.attractive = it.scored && o.option !== "기타" && !o.isKey && o.propAll > it.attractiveness + 1e-9;
     });
     if (scored[j]) {
@@ -285,14 +259,12 @@ const analyze = (data) => {
     const sYx = sY - sX[j];
     const sY2x = sY2 - 2 * sXY[j] + sX2[j];
     it.alphaIfDeleted = alphaIfDeleted(k, it.s_i2, sumSi2, sYx, sY2x, N);
-    it.alphaUp = it.alphaIfDeleted > alpha + 1e-12; // 제외 시 α가 전체 α보다 커지는 문항
+    it.alphaUp = it.alphaIfDeleted > alpha + 1e-12;
     delete it.s_i2;
   }
 
-  // 중앙값: TestAn은 정수로 보고한다. N이 짝수이면 가운데 두 점수 중 낮은 점수 (70명 자료에서 8·9 → 8로 확인)
-  const median = sorted[N >> 1].raw; // 내림차순 배열: 홀수면 가운데, 짝수면 가운데 두 점수 중 낮은 점수
+  const median = sorted[N >> 1].raw;
 
-  // 점수 분포 (TestAn .grp: 최저점수 −1 ~ 최고점수 +1)
   const freq = new Map();
   students.forEach((s) => freq.set(s.raw, (freq.get(s.raw) ?? 0) + 1));
   const lo = Math.max(0, minS - 1);

@@ -1,6 +1,6 @@
 "use strict";
 
-const CACHE = "testan-web-v13";
+const CACHE = "testan-web-v14";
 const ASSETS = [
   "./",
   "./index.html",
@@ -11,8 +11,6 @@ const ASSETS = [
   "./script/data.js",
   "./script/formulas.js",
   "./script/analysis.js",
-  "./script/chart.js",
-  "./script/format.js",
   "./script/app.js",
   "./sample-data/answer.dat",
   "./favicon.ico",

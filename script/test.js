@@ -6,7 +6,6 @@ const { analyze } = require("./analysis.js");
 
 const dir = path.join(__dirname, "..", "sample-data");
 
-/** buildSource 결과를 analyze 입력 모델로 바꾼다 (app.js runAnalysis와 동일한 규칙). */
 const toModel = (src) => {
   const n = src.nItems;
   return {
@@ -19,7 +18,6 @@ const toModel = (src) => {
   };
 };
 
-/** 응답자료(src)를 KEY/OPTIONS/INCLUDE 헤더를 갖춘 CSV로 직렬화한다. */
 const toCsv = (src) => {
   const n = src.nItems;
   const lines = [];
@@ -35,7 +33,6 @@ const toCsv = (src) => {
   return lines.join("\n") + "\n";
 };
 
-/** 응답자료(src)를 "ID+응답" 고정 텍스트로 직렬화한다. */
 const toFixed = (src, idWidth) =>
   src.ids
     .map((id, i) => String(id).padStart(idWidth, "0") + src.resp[i].map((r) => (r === " " ? " " : r)).join(""))
