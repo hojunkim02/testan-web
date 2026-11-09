@@ -1,6 +1,6 @@
 "use strict";
 
-const CACHE = "testan-web-v18";
+const CACHE = "testan-web-v19";
 const ASSETS = [
   "./",
   "./index.html",
