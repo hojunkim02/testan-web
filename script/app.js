@@ -101,8 +101,8 @@ $("loadDemo").addEventListener("click", async () => {
     const text =
       typeof EMBEDDED_SAMPLE !== "undefined"
         ? EMBEDDED_SAMPLE
-        : await (await fetch("sample-data/answer.csv")).text();
-    loadRaw(readSource(new TextEncoder().encode(text), "answer.csv"), "예시자료(answer.dat)", true);
+        : await (await fetch("sample-data/answer.dat")).text();
+    loadRaw(readSource(new TextEncoder().encode(text), "answer.dat"), "예시자료(answer.dat)", true);
   } catch (err) {
     setStatus(`예시 자료를 불러오지 못했습니다: ${err.message}`, "error");
   }

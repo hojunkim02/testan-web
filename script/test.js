@@ -44,7 +44,7 @@ const toFixed = (src, idWidth) =>
 let pass = 0;
 let fail = 0;
 
-const files = fs.readdirSync(dir).filter((f) => f.endsWith(".csv")).sort();
+const files = fs.readdirSync(dir).filter((f) => f.endsWith(".dat")).sort();
 files.forEach((f) => {
   try {
     const src = buildSource(readSource(fs.readFileSync(path.join(dir, f)), f));
@@ -61,7 +61,7 @@ files.forEach((f) => {
   }
 });
 
-const ansSrc = buildSource(readSource(fs.readFileSync(path.join(dir, "answer.csv")), "answer.csv"));
+const ansSrc = buildSource(readSource(fs.readFileSync(path.join(dir, "answer.dat")), "answer.dat"));
 const ansResult = analyze(toModel(ansSrc));
 const st = ansResult.stats;
 const round = (x, d) => {
