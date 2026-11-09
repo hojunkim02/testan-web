@@ -793,3 +793,424 @@ footer {
     min-height: 38px;
   }
 }
+
+/* ---------- 실습판 ---------- */
+:root {
+  --warn: #8a5300;
+  --warn-tint: rgba(196, 128, 0, 0.12);
+  --alpha-up: #0b5cad;
+}
+:root[data-theme="dark"] {
+  --warn: #ffc56b;
+  --warn-tint: rgba(255, 197, 107, 0.12);
+  --alpha-up: #8cc8ff;
+}
+.spacer {
+  flex: 1;
+}
+.btn:disabled,
+.btn:disabled:hover {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: var(--card-solid);
+}
+.btn.accent:disabled {
+  background: var(--accent);
+}
+.tabs button:disabled {
+  color: var(--text-disabled);
+  cursor: not-allowed;
+  background: transparent;
+}
+.hint {
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--text-tertiary);
+}
+#dropZone.dragging {
+  outline: 2px dashed var(--accent);
+  outline-offset: -6px;
+}
+.demo-banner {
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--warn);
+  background: var(--warn-tint);
+  border-radius: var(--radius-s);
+}
+.muted {
+  color: var(--text-tertiary);
+}
+#srcSummary {
+  margin: 0 0 10px;
+}
+.setup-row {
+  margin-bottom: 6px;
+}
+.setup-row input[type="number"] {
+  width: 64px;
+}
+
+/* 정답 일괄 입력 */
+.bulk {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.bulk-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.bulk input[type="text"],
+.bulk input[type="number"] {
+  font: inherit;
+  color: var(--text);
+  background: var(--card-solid);
+  border: 1px solid var(--stroke-strong);
+  border-bottom-color: var(--text-tertiary);
+  border-radius: var(--radius-s);
+  padding: 5px 8px;
+}
+.bulk .muted {
+  font-size: 12px;
+}
+.bulk input[type="text"] {
+  flex: 1 1 320px;
+  min-width: 0;
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  letter-spacing: 0.06em;
+}
+.bulk input[type="number"] {
+  width: 60px;
+}
+.bulk input:focus {
+  outline: none;
+  border-bottom: 2px solid var(--accent);
+}
+.bulk .sep {
+  width: 1px;
+  align-self: stretch;
+  background: var(--stroke-strong);
+  margin: 0 4px;
+}
+
+/* 정답·답지 수·분석 포함 표 */
+.setup-wrap {
+  max-height: none;
+}
+.setup-table th,
+.setup-table td {
+  padding: 3px 2px;
+  min-width: 30px;
+  font-variant-numeric: tabular-nums;
+}
+.setup-table th.rowhead {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: var(--mica);
+  padding: 4px 10px;
+  text-align: left;
+  min-width: 68px;
+  box-shadow: inset -1px 0 0 var(--stroke-strong);
+}
+.setup-table tr:first-child th {
+  color: var(--text-tertiary);
+  font-weight: 600;
+}
+.setup-table input.cell {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  text-align: center;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-s);
+}
+.setup-table input.cell:hover {
+  border-color: var(--stroke-strong);
+}
+.setup-table input.cell:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--accent-tint);
+}
+.setup-table input.cell.invalid {
+  background: var(--error-tint);
+  border-color: var(--error);
+}
+.setup-table input.opt {
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+.setup-table td.excluded input.cell {
+  color: var(--text-disabled);
+  text-decoration: line-through;
+}
+.setup-table input[type="checkbox"] {
+  accent-color: var(--accent);
+  width: 15px;
+  height: 15px;
+}
+.setup-table tbody tr:hover td {
+  background: transparent;
+}
+.setup-msg {
+  margin: 10px 0 4px;
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--text-secondary);
+}
+.setup-msg p {
+  margin: 2px 0;
+}
+.setup-msg .err {
+  color: var(--error);
+  font-weight: 600;
+}
+.setup-msg .note {
+  color: var(--warn);
+}
+.run-row {
+  margin: 8px 0 14px;
+}
+.preview summary,
+.glossary summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.preview .table-wrap {
+  margin-top: 8px;
+  max-height: 320px;
+}
+
+/* 점수 분석 */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0;
+}
+.stat {
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px;
+  background: var(--card-solid);
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius-m);
+}
+.stat-label {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+.stat-value {
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.stat-sub {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.chart-box {
+  background: var(--card-solid);
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius-m);
+  overflow: hidden;
+}
+.chart-box canvas {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.two-col .col {
+  min-width: 0;
+}
+.two-col .table-wrap {
+  max-height: 460px;
+}
+.with-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.inline-select {
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--text-secondary);
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+.inline-select select {
+  font: inherit;
+  color: var(--text);
+  background: var(--card-solid);
+  border: 1px solid var(--stroke-strong);
+  border-radius: var(--radius-s);
+  padding: 2px 4px;
+}
+.data-table.num td,
+.item-table td {
+  font-variant-numeric: tabular-nums;
+}
+.data-table tr:first-child th {
+  position: sticky;
+  top: 0;
+  background: var(--mica);
+  z-index: 1;
+  box-shadow: inset 0 -1px 0 var(--stroke-strong);
+}
+
+/* 문항 분석 */
+.legend {
+  margin: 4px 0 10px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--text-secondary);
+}
+.item-wrap {
+  max-height: 70vh;
+}
+.item-table th,
+.item-table td {
+  padding: 4px 8px;
+}
+.item-table thead tr.group th {
+  top: 0;
+  height: 24px;
+  padding: 3px 8px;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  border-bottom: none;
+  box-shadow: none;
+}
+.item-table thead tr.group th + th {
+  border-left: 1px solid var(--stroke);
+}
+.item-table thead tr:not(.group) th {
+  top: 24px;
+}
+.item-table tbody.item {
+  border-top: 2px solid var(--stroke-strong);
+}
+.item-table tbody.item td {
+  border-bottom-color: var(--stroke);
+}
+.item-table tbody tr:hover td {
+  background: transparent;
+}
+.item-table tbody.item:hover td {
+  background: var(--accent-tint);
+}
+.item-table td.qno {
+  font-weight: 700;
+  font-size: 13px;
+}
+.item-table td.attr {
+  border-left: 1px solid var(--stroke);
+  color: var(--text-secondary);
+}
+.item-table td.opt {
+  border-left: 1px solid var(--stroke);
+}
+.item-table td.key-opt {
+  font-weight: 700;
+  color: var(--accent);
+}
+.item-table td.note {
+  text-align: left;
+  font-size: 11px;
+  color: var(--error);
+  min-width: 96px;
+}
+.item-table tbody.total td {
+  background: var(--mica);
+  font-weight: 600;
+  border-bottom: 1px solid var(--stroke-strong);
+}
+.item-table td.alpha-total {
+  color: var(--text);
+}
+.item-table tbody.unscored td {
+  color: var(--text-tertiary);
+}
+.neg,
+.item-table td.neg {
+  font-weight: 700;
+  color: var(--error);
+}
+.alpha-up,
+.item-table td.alpha-up {
+  font-weight: 800;
+  color: var(--alpha-up);
+}
+
+.glossary {
+  margin-top: 12px;
+  padding: 8px 12px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--text-secondary);
+  background: var(--card-hover);
+  border-radius: var(--radius-s);
+}
+.glossary dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 12px;
+  margin: 8px 0 0;
+}
+.glossary dt {
+  font-weight: 600;
+  color: var(--text);
+}
+.glossary dd {
+  margin: 0;
+}
+h1 .edition {
+  font-size: 0.55em;
+  font-weight: 600;
+  color: var(--accent);
+  margin-left: 4px;
+}
+.controls label.check {
+  cursor: pointer;
+  user-select: none;
+}
+@media (max-width: 760px) {
+  .stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .two-col {
+    grid-template-columns: 1fr;
+  }
+  .glossary dl {
+    grid-template-columns: 1fr;
+  }
+  .glossary dd {
+    margin-bottom: 6px;
+  }
+}
