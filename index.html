@@ -3,17 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TestAn Web - 문항분석 도구</title>
+    <title>TestAn Web 실습판</title>
     <link rel="stylesheet" href="style/style.css" />
     <link rel="icon" href="favicon.ico" sizes="16x16 32x32 48x48" />
     <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png" />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="192x192"
-      href="icons/icon-192.png"
-    />
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#0f6cbd" />
     <link rel="apple-touch-icon" href="icons/icon-192.png" />
@@ -21,259 +16,191 @@
   </head>
   <body>
     <header>
-      <h1>TestAn Web</h1>
-      <p class="subtitle">
-        고전적 문항분석(CTT) 도구 · 원본: TestAn 1.0 for Windows (2000)
-      </p>
+      <h1>TestAn Web <small class="edition">실습판</small></h1>
+      <p class="subtitle">고전검사이론(CTT) 문항분석 · 원본: TestAn 1.0 for Windows (성태제, 2000)</p>
     </header>
     <main>
-      <section class="panel">
+      <section class="panel" id="dropZone">
         <div class="controls">
-          <button id="loadDemo" class="btn accent">샘플 데이터로 보기</button>
-          <button id="newData" class="btn">새 응답자료 만들기</button>
-          <button id="editData" class="btn">데이터 편집</button>
-          <div class="split-btn menu-wrap">
-            <button id="importBtn" class="btn split-main">불러오기</button>
-            <button
-              id="importChev"
-              class="btn split-chev"
-              aria-label="불러오기 메뉴 열기"
-              aria-haspopup="menu"
-              aria-expanded="false"
-            >
-              <svg
-                viewBox="0 0 16 16"
-                width="16"
-                height="16"
-                aria-hidden="true"
-              >
-                <path
-                  d="M3.2 5.7a.75.75 0 0 1 1.06-.04L8 9.1l3.74-3.44a.75.75 0 1 1 1.02 1.1l-4.25 4a.75.75 0 0 1-1.02 0l-4.25-4a.75.75 0 0 1-.04-1.06z"
-                />
-              </svg>
-            </button>
-            <div id="importMenu" class="menu" role="menu" hidden>
-              <button class="menu-item" id="importCsv" role="menuitem">
-                CSV (.csv)
-              </button>
-              <button class="menu-item" id="importDat" role="menuitem">
-                DAT (.dat)
-              </button>
-            </div>
-          </div>
-          <input type="file" id="fileInput" accept=".csv,.dat,.txt" hidden />
-          <div class="split-btn menu-wrap">
-            <button id="exportBtn" class="btn split-main">내보내기</button>
-            <button
-              id="exportChev"
-              class="btn split-chev"
-              aria-label="내보내기 메뉴 열기"
-              aria-haspopup="menu"
-              aria-expanded="false"
-            >
-              <svg
-                viewBox="0 0 16 16"
-                width="16"
-                height="16"
-                aria-hidden="true"
-              >
-                <path
-                  d="M3.2 5.7a.75.75 0 0 1 1.06-.04L8 9.1l3.74-3.44a.75.75 0 1 1 1.02 1.1l-4.25 4a.75.75 0 0 1-1.02 0l-4.25-4a.75.75 0 0 1-.04-1.06z"
-                />
-              </svg>
-            </button>
-            <div id="exportMenu" class="menu" role="menu" hidden>
-              <button class="menu-item" id="exportCsv" role="menuitem">
-                CSV (.csv)
-              </button>
-              <button class="menu-item" id="exportDat" role="menuitem">
-                DAT (.dat)
-              </button>
-            </div>
-          </div>
-          <button
-            id="themeBtn"
-            class="btn icon-btn"
-            aria-label="다크 모드 전환"
-            title="다크 모드 전환"
-          ></button>
-          <button
-            id="aboutBtn"
-            class="btn icon-btn"
-            aria-label="정보"
-            title="정보"
-          >
+          <button id="openFile" class="btn accent">응답 파일 열기</button>
+          <button id="loadDemo" class="btn">예시 자료 불러오기</button>
+          <button id="reportAll" class="btn" disabled>Word 보고서 저장</button>
+          <span class="spacer"></span>
+          <button id="themeBtn" class="btn icon-btn" aria-label="다크 모드 전환" title="다크 모드 전환"></button>
+          <button id="aboutBtn" class="btn icon-btn" aria-label="정보" title="정보">
             <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
-              <path
-                d="M8 1.75a6.25 6.25 0 1 0 0 12.5A6.25 6.25 0 0 0 8 1.75zM.25 8a7.75 7.75 0 1 1 15.5 0A7.75 7.75 0 0 1 .25 8z"
-              />
-              <path
-                d="M8.75 5.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0zM7.25 8a.75.75 0 0 1 1.5 0v3.25a.75.75 0 0 1-1.5 0z"
-              />
+              <path d="M8 1.75a6.25 6.25 0 1 0 0 12.5A6.25 6.25 0 0 0 8 1.75zM.25 8a7.75 7.75 0 1 1 15.5 0A7.75 7.75 0 0 1 .25 8z" />
+              <path d="M8.75 5.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0zM7.25 8a.75.75 0 0 1 1.5 0v3.25a.75.75 0 0 1-1.5 0z" />
             </svg>
           </button>
         </div>
+        <input type="file" id="fileInput" accept=".xlsx,.xls,.xlsm,.ods,.csv,.tsv,.txt,.dat" hidden />
+        <p class="hint" id="dropHint">
+          Excel(.xlsx, .xls), CSV, 텍스트(.txt), TestAn 응답자료(.dat)를 열 수 있습니다. 파일을 이 상자에 끌어다 놓아도 됩니다.
+          한 행에 한 학생, 첫 열(들)은 학번·이름, 그 뒤로 문항별 응답을 둡니다.
+        </p>
         <div id="status" class="status"></div>
       </section>
+
+      <div id="demoBanner" class="demo-banner" hidden>
+        예시 자료(TestAn 매뉴얼 answer.dat, 70문항·119명)를 분석하고 있습니다. 실습 결과로 제출하지 마세요.
+      </div>
+
       <nav class="tabs" id="tabs" hidden>
-        <button data-tab="input" class="active">입력 데이터</button>
-        <button data-tab="score">점수 결과</button>
-        <button data-tab="item">문항 분석</button>
-        <button data-tab="option">답지 분석</button>
-        <button data-tab="graph">그래프</button>
+        <button data-tab="setup" class="active">자료 설정</button>
+        <button data-tab="score" disabled>점수 분석</button>
+        <button data-tab="item" disabled>문항 분석</button>
       </nav>
-      <section id="tab-input" class="tab-content">
-        <h2>입력 데이터</h2>
-        <div id="inputSummary" class="summary"></div>
-        <div class="table-wrap">
-          <table class="data-table" id="inputTable"></table>
+
+      <!-- 1. 자료 설정 -->
+      <section id="tab-setup" class="tab-content" hidden>
+        <div id="srcSummary" class="summary"></div>
+        <div class="controls setup-row" id="idRow"></div>
+
+        <h3>정답 · 답지 수 · 분석 포함</h3>
+        <div class="bulk">
+          <label for="bulkKey">정답 한꺼번에 입력</label>
+          <div class="bulk-line">
+            <input type="text" id="bulkKey" placeholder="예: 4313341213… 또는 엑셀 정답 행을 복사해 붙여넣기" autocomplete="off" />
+            <button id="applyKey" class="btn">정답 적용</button>
+          </div>
+          <label for="bulkOpt">답지 수 한꺼번에 입력</label>
+          <div class="bulk-line">
+            <input type="text" id="bulkOpt" placeholder="모든 문항이 같으면 4처럼 한 글자, 다르면 4444455552…처럼 문항 순서대로" autocomplete="off" />
+            <button id="applyOpt" class="btn">답지 수 적용</button>
+          </div>
+          <div class="bulk-line">
+            <span>분석 포함</span>
+            <button id="incAll" class="btn">모두 포함</button>
+            <button id="incNone" class="btn">모두 제외</button>
+            <span class="muted">개별 문항은 아래 표에서 고칩니다. 칸을 클릭해 숫자를 바꾸고, 화살표 키로 옮겨 다닐 수 있습니다.</span>
+          </div>
         </div>
+        <div class="table-wrap setup-wrap">
+          <table class="data-table setup-table" id="setupTable"></table>
+        </div>
+        <div id="setupMsg" class="setup-msg" aria-live="polite"></div>
+        <div class="controls run-row">
+          <button id="runBtn" class="btn accent">분석 실행</button>
+        </div>
+        <details class="preview">
+          <summary>응답자료 미리보기</summary>
+          <div class="table-wrap">
+            <table class="data-table" id="previewTable"></table>
+          </div>
+        </details>
       </section>
+
+      <!-- 2. 점수 분석 -->
       <section id="tab-score" class="tab-content" hidden>
-        <h2>점수 결과</h2>
-        <div id="scoreSummary" class="summary"></div>
-        <div class="table-wrap">
-          <table class="data-table" id="scoreTable"></table>
+        <div class="controls">
+          <button id="scoreDocx" class="btn">Word로 저장</button>
+          <button id="scoreXlsx" class="btn">Excel로 저장</button>
+        </div>
+        <div class="stat-grid" id="statGrid"></div>
+        <div class="chart-box">
+          <canvas id="chart" role="img" aria-label="검사점수 분포 그래프"></canvas>
+        </div>
+        <div class="two-col">
+          <div class="col">
+            <h3>검사점수의 백분율</h3>
+            <div class="table-wrap">
+              <table class="data-table num" id="distTable"></table>
+            </div>
+          </div>
+          <div class="col">
+            <h3 class="with-control">
+              피험자별 점수
+              <label class="inline-select"
+                >정렬
+                <select id="scoreSort">
+                  <option value="input">입력 순서</option>
+                  <option value="rank">석차순</option>
+                </select>
+              </label>
+            </h3>
+            <div class="table-wrap">
+              <table class="data-table num" id="scoreTable"></table>
+            </div>
+          </div>
         </div>
       </section>
+
+      <!-- 3. 문항 분석 -->
       <section id="tab-item" class="tab-content" hidden>
-        <h2>문항 분석</h2>
         <div class="controls">
           <label
-            >정렬:
+            >정렬
             <select id="itemSort">
               <option value="index">문항 순서</option>
-              <option value="diffAsc">난이도 오름차순</option>
-              <option value="diffDesc">난이도 내림차순</option>
-              <option value="discDesc">변별도 내림차순</option>
+              <option value="diffAsc">난이도 낮은 순 (어려운 문항부터)</option>
+              <option value="diffDesc">난이도 높은 순 (쉬운 문항부터)</option>
+              <option value="rDesc">변별도(r) 높은 순</option>
+              <option value="rcDesc">수정변별도 높은 순</option>
+              <option value="dDesc">상하위 정답률 차 높은 순</option>
+              <option value="alphaDesc">제외 시 α 높은 순</option>
             </select>
           </label>
+          <button id="itemDocx" class="btn">Word로 저장</button>
         </div>
-        <div class="table-wrap">
-          <table class="data-table" id="itemTable"></table>
+        <p class="legend">
+          <b class="alpha-up">굵은 글씨</b>의 ‘제외 시 α’는 그 문항을 빼면 검사 전체 α보다 신뢰도가 높아진다는 뜻이고,
+          <b class="neg">빨간 글씨</b>의 변별도(r)는 음수입니다.
+          ‘*’는 정답, ‘기타’는 무응답과 답지 범위 밖의 응답이며 기타 응답자가 없는 문항에서는 생략합니다.
+        </p>
+        <div class="table-wrap item-wrap">
+          <table class="data-table item-table" id="itemTable"></table>
         </div>
-      </section>
-      <section id="tab-option" class="tab-content" hidden>
-        <h2>답지 분석</h2>
-        <div class="controls">
-          <label
-            >문항:
-            <select id="optionItem"></select>
-          </label>
-          <span id="optionSummary" class="summary"></span>
-        </div>
-        <div class="table-wrap">
-          <table class="data-table" id="optionTable"></table>
-        </div>
-      </section>
-      <section id="tab-graph" class="tab-content" hidden>
-        <h2>그래프</h2>
-        <div class="controls">
-          <label
-            >항목:
-            <select id="graphMode">
-              <option value="diff">문항 난이도 (정답률 %)</option>
-              <option value="disc">문항 변별도 (D)</option>
-              <option value="score">점수 분포 (도수)</option>
-              <option value="cum">점수 누가 백분율</option>
-            </select>
-          </label>
-        </div>
-        <canvas id="chart" width="900" height="400"></canvas>
-        <h3>검사점수의 백분율 표</h3>
-        <div class="table-wrap">
-          <table class="data-table" id="graphTable"></table>
-        </div>
+        <details class="glossary">
+          <summary>지표 정의</summary>
+          <dl>
+            <dt>난이도</dt><dd>정답자 수 R ÷ 전체 피험자 수 N</dd>
+            <dt>추측도</dt><dd>오답자 수 ÷ (답지 수 − 1) ÷ N. 오답자는 정답이 아닌 답지를 고른 피험자이며 무응답·기타는 빼고 센다.</dd>
+            <dt>교정난이도</dt><dd>난이도 − 추측도</dd>
+            <dt>변별도(r)</dt><dd>문항 점수(0, 1)와 총점의 상관계수. 총점에 그 문항이 들어 있다.</dd>
+            <dt>수정변별도</dt><dd>문항 점수와 ‘총점 − 그 문항 점수’의 상관계수</dd>
+            <dt>상하위 정답률 차</dt><dd>상위 27% 집단의 정답률 − 하위 27% 집단의 정답률</dd>
+            <dt>상·하위 27% 집단</dt><dd>같은 점수의 학생은 같은 집단에 넣는다. 위(아래)부터 점수별로 묶어 차례로 넣되, 어떤 점수 묶음의 가운데가 전체의 27% 지점을 넘으면 그 묶음부터는 넣지 않는다. 곧 점수 경계 가운데 27%에 가장 가까운 곳에서 자르므로(TestAn과 같은 방식) 집단 인원이 27%보다 많거나 적을 수 있다. 실제 인원은 점수 분석 탭에 표시된다.</dd>
+            <dt>제외 시 α</dt><dd>그 문항을 빼고 나머지 문항으로 계산한 Cronbach α</dd>
+            <dt>답지 응답비율</dt><dd>전체·상위 27%·하위 27% 집단에서 그 답지를 고른 비율. 상관계수는 답지 선택 여부(1, 0)와 총점의 상관이다.</dd>
+            <dt>오답지 매력도 기준</dt><dd>(1 − 난이도) ÷ (답지 수 − 1). 오답자가 오답지를 고르게 선택했을 때 오답지 하나가 받을 기대 비율로, 각 오답지의 전체 응답비율과 비교한다.</dd>
+          </dl>
+        </details>
       </section>
     </main>
-    <div id="newModal" class="modal" hidden>
-      <div class="modal-content modal-narrow">
-        <button class="dialog-close" aria-label="닫기">✕</button>
-        <h2>새 응답자료 만들기</h2>
-        <div class="wiz-step">
-          <label
-            >문항 수 (1~200):
-            <input
-              type="number"
-              inputmode="numeric"
-              id="newItems"
-              min="1"
-              max="200"
-              value="10"
-          /></label>
-          <label
-            >ID 칸 수 (1~99):
-            <input
-              type="number"
-              inputmode="numeric"
-              id="newIdw"
-              min="1"
-              max="99"
-              value="4"
-          /></label>
-          <button id="newBuild" class="btn">입력</button>
-        </div>
-        <div id="wizBody" hidden>
-          <p class="summary">
-            표의 각 칸에 정답·답지 수·분석 포함 여부를 직접 입력하세요.
-            <strong>Enter</strong>는 아래 칸으로, <strong>Tab</strong>은 오른쪽
-            칸으로 이동합니다.
-          </p>
-          <div class="wiz-table table-wrap">
-            <table class="data-table" id="newTable"></table>
-          </div>
-          <div class="controls wiz-footer">
-            <button id="newGenerate" class="btn accent">확인</button>
-            <button id="newCancel" class="btn">취소</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div id="editModal" class="modal" hidden>
-      <div class="modal-content modal-wide">
-        <button class="dialog-close" aria-label="닫기">✕</button>
-        <h2>데이터 편집</h2>
-        <p class="summary">
-          정답·답지 수·분석 포함 여부와 학생 응답을 표에서 직접 수정합니다. 학생
-          행은 한 줄에 한 명이며, 응답 칸을 비워 두면 무응답으로 처리됩니다.
-          적용하면 다시 분석합니다.
-        </p>
-        <div class="controls">
-          <button id="addStudent" class="btn">＋ 학생 행 추가</button>
-          <span id="editInfo" class="summary"></span>
-        </div>
-        <div class="table-wrap edit-grid-wrap">
-          <table class="data-table" id="editTable"></table>
-        </div>
-        <div class="controls">
-          <button id="editApply" class="btn accent">적용</button>
-          <button id="editCancel" class="btn">취소</button>
-        </div>
-      </div>
-    </div>
+
     <div id="aboutModal" class="modal" hidden>
       <div class="modal-content modal-narrow">
         <button class="dialog-close" aria-label="닫기">✕</button>
-        <h2>TestAn Web</h2>
+        <h2>TestAn Web 실습판</h2>
         <p>고전검사이론(CTT)에 의한 검사 분석 프로그램</p>
         <p class="summary">
-          원본: TestAn 1.0 for Windows (VB6, 2000)<br />
-          이화여자대학교 교육학과 성태제 교수 저서 부록 · 에버케이션
+          교육평가 수업 실습용. 추측도 · 교정난이도 · 수정변별도 · 문항 제외 시 신뢰도, Excel 입력, Word 보고서 저장.
         </p>
         <p class="summary">
-          서버 없는 정적 웹 앱 · 모든 계산은 브라우저에서 수행
+          원본: TestAn 1.0 for Windows (VB6, 2000), 이화여자대학교 교육학과 성태제 교수 저서 부록 · 에버케이션<br />
+          웹 이식: hojunkim02 (github.com/hojunkim02/testan-web)
         </p>
+        <p class="summary">입력한 응답자료는 서버로 전송되지 않으며 모든 계산은 이 브라우저 안에서 이루어집니다.</p>
         <button id="aboutClose" class="btn">닫기</button>
       </div>
     </div>
     <footer>
-      <p>
-        GitHub Pages로 배포되는 정적 웹 앱입니다. 모든 파싱·계산은 브라우저에서
-        수행됩니다.
-      </p>
+      <p>응답자료는 이 컴퓨터 밖으로 전송되지 않습니다.</p>
     </footer>
+    
+    
+    
+    
+    
+    
+    
+    <script src="script/vendor/xlsx.full.min.js"></script>
+    <script src="script/vendor/docx.js"></script>
     <script src="script/data.js"></script>
     <script src="script/analysis.js"></script>
+    <script src="script/chart.js"></script>
+    <script src="script/format.js"></script>
     <script src="script/app.js"></script>
     <script>
       if ("serviceWorker" in navigator) {
