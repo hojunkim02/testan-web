@@ -14,7 +14,50 @@
  *
  * 응답 처리 (TestAn과 동일): 1~Q 사이의 응답만 답지 응답으로 보고,
  * 무응답과 답지 범위를 벗어난 응답은 '기타'로 집계한다.
+ *
+ * 수학 공식 자체는 script/formulas.js에 별도로 분리해 두었다.
  */
+const {
+  pearson,
+  pointBiserial,
+  correctedDiscrimination,
+  itemDifficulty,
+  guessingRate,
+  correctedDifficulty,
+  discriminationIndex,
+  optionAttractiveness,
+  itemVariance,
+  populationSd,
+  sampleVariance,
+  cronbachAlpha,
+  alphaIfDeleted,
+  skewness,
+  kurtosis,
+  sem,
+  meanOf,
+} =
+  typeof module !== "undefined"
+    ? require("./formulas.js")
+    : {
+        pearson,
+        pointBiserial,
+        correctedDiscrimination,
+        itemDifficulty,
+        guessingRate,
+        correctedDifficulty,
+        discriminationIndex,
+        optionAttractiveness,
+        itemVariance,
+        populationSd,
+        sampleVariance,
+        cronbachAlpha,
+        alphaIfDeleted,
+        skewness,
+        kurtosis,
+        sem,
+        meanOf,
+      };
+
 const analyze = (data) => {
   const { nItems, key, weights, scored, students, numOptions } = data;
   const N = students.length;
@@ -166,18 +209,18 @@ const analyze = (data) => {
     }
   }
 
-  const sd = Math.sqrt(Math.max(0, sY2 / N - meanY * meanY)); // 모집단 표준편차 (매뉴얼)
-  const sX2sample = N > 1 ? (sY2 - (sY * sY) / N) / (N - 1) : 0;
+  const sd = populationSd(sY2, meanY, N); // 모집단 표준편차 (매뉴얼)
+  const sX2sample = sampleVariance(sY, sY2, N);
   const scale = N / (N - 1 || 1);
 
   const items = new Array(nItems);
   let sumSi2 = 0;
   for (let j = 0; j < nItems; j++) {
-    const P = R[j] / N;
+    const P = itemDifficulty(R[j], N);
     const Q = numOptions[j] || 0;
     const keyLab = key[j] && key[j] !== " " ? String(Number(key[j])) : "";
     const W = V[j] - R[j]; // 오답자: 답지 범위 안에서 정답이 아닌 답지를 고른 피험자 (무응답·기타 제외)
-    const guessing = scored[j] && Q > 1 ? W / (Q - 1) / N : 0;
+    const guessing = scored[j] ? guessingRate(W, Q, N) : 0;
     const it = {
       index: j + 1,
       key: key[j],
@@ -188,20 +231,23 @@ const analyze = (data) => {
       other: N - V[j], // 기타 (무응답 + 범위 밖 응답)
       difficulty: P,
       guessing,
-      correctedDifficulty: P - guessing,
-      pointBiserial: pearson(sX[j], sX2[j], sXY[j], sY, sY2, N),
-      correctedDiscrimination: pearson(
+      correctedDifficulty: correctedDifficulty(P, guessing),
+      pointBiserial: pointBiserial(sX[j], sX2[j], sXY[j], sY, sY2, N),
+      correctedDiscrimination: correctedDiscrimination(
         sX[j],
         sX2[j],
-        sXY[j] - sX2[j],
-        sY - sX[j],
-        sY2 - 2 * sXY[j] + sX2[j],
+        sXY[j],
+        sY,
+        sY2,
         N,
       ),
       pUpper: nU ? cU[j] / nU : 0,
       pLower: nL ? cL[j] / nL : 0,
-      discrimination: (nU ? cU[j] / nU : 0) - (nL ? cL[j] / nL : 0),
-      attractiveness: Q > 1 ? (1 - P) / (Q - 1) : 0,
+      discrimination: discriminationIndex(
+        nU ? cU[j] / nU : 0,
+        nL ? cL[j] / nL : 0,
+      ),
+      attractiveness: optionAttractiveness(P, Q),
       options: [...opts[j].values()]
         .sort((a, b) =>
           a.option === "기타" ? 1 : b.option === "기타" ? -1 : Number(a.option) - Number(b.option),
@@ -221,14 +267,13 @@ const analyze = (data) => {
       o.attractive = it.scored && o.option !== "기타" && !o.isKey && o.propAll > it.attractiveness + 1e-9;
     });
     if (scored[j]) {
-      it.s_i2 = (sX2[j] - (sX[j] * sX[j]) / N) / N;
+      it.s_i2 = itemVariance(sX[j], sX2[j], N);
       sumSi2 += it.s_i2;
     }
     items[j] = it;
   }
 
-  const alpha =
-    k >= 2 && sX2sample > 0 ? (k / (k - 1)) * (1 - (sumSi2 * scale) / sX2sample) : 0;
+  const alpha = cronbachAlpha(k, sumSi2, scale, sX2sample);
 
   for (const it of items) {
     if (k < 3 || !it.scored) {
@@ -239,17 +284,13 @@ const analyze = (data) => {
     const j = it.index - 1;
     const sYx = sY - sX[j];
     const sY2x = sY2 - 2 * sXY[j] + sX2[j];
-    const varX = N > 1 ? (sY2x - (sYx * sYx) / N) / (N - 1) : 0;
-    const kk = k - 1;
-    it.alphaIfDeleted =
-      varX > 0 ? (kk / (kk - 1)) * (1 - ((sumSi2 - it.s_i2) * scale) / varX) : 0;
+    it.alphaIfDeleted = alphaIfDeleted(k, it.s_i2, sumSi2, sYx, sY2x, N);
     it.alphaUp = it.alphaIfDeleted > alpha + 1e-12; // 제외 시 α가 전체 α보다 커지는 문항
     delete it.s_i2;
   }
 
   // 중앙값: TestAn은 정수로 보고한다. N이 짝수이면 가운데 두 점수 중 낮은 점수 (70명 자료에서 8·9 → 8로 확인)
   const median = sorted[N >> 1].raw; // 내림차순 배열: 홀수면 가운데, 짝수면 가운데 두 점수 중 낮은 점수
-  const sdSafe = sd || 1;
 
   // 점수 분포 (TestAn .grp: 최저점수 −1 ~ 최고점수 +1)
   const freq = new Map();
@@ -281,10 +322,10 @@ const analyze = (data) => {
       min: minS,
       high: maxS,
       median,
-      skewness: sd ? m3 / N / sdSafe ** 3 : 0,
-      kurtosis: sd ? m4 / N / sdSafe ** 4 - 3 : 0,
+      skewness: skewness(m3, N, sd),
+      kurtosis: kurtosis(m4, N, sd),
       reliability: alpha,
-      sem: sd * Math.sqrt(Math.max(0, 1 - alpha)),
+      sem: sem(sd, alpha),
       meanDifficulty: meanOf(items, k, (it) => it.difficulty),
       meanGuessing: meanOf(items, k, (it) => it.guessing),
       meanCorrectedDifficulty: meanOf(items, k, (it) => it.correctedDifficulty),
@@ -293,17 +334,6 @@ const analyze = (data) => {
       meanDiscrimination: meanOf(items, k, (it) => it.discrimination),
     },
   };
-};
-
-/** 분석 포함 문항(k개)에 대한 지표 평균 */
-const meanOf = (items, k, f) =>
-  k ? items.reduce((a, it) => a + (it.scored ? f(it) : 0), 0) / k : 0;
-
-/** 집계값(ΣX, ΣX², ΣXY, ΣY, ΣY²)으로 피어슨 상관계수를 계산한다 */
-const pearson = (sX, sX2, sXY, sY, sY2, N) => {
-  const dX = N * sX2 - sX * sX;
-  const dY = N * sY2 - sY * sY;
-  return dX > 0 && dY > 0 ? (N * sXY - sX * sY) / (Math.sqrt(dX) * Math.sqrt(dY)) : 0;
 };
 
 if (typeof module !== "undefined") module.exports = { analyze };
