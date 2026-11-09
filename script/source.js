@@ -23,7 +23,7 @@ const normCell = (v) => {
   if (!s) return " ";
   const ci = CIRCLED.indexOf(s);
   if (s.length === 1 && ci >= 0) return String(ci + 1);
-  if (/^\d+(\.0+)?$/.test(s)) return String(parseInt(s, 10));
+  if (/^\d+(\.0+)?$/.test(s)) return String(Number.parseInt(s, 10));
   return s;
 };
 
@@ -163,7 +163,7 @@ const tableToSource = (rawRows, idColsArg) => {
     throw new Error("응답 열을 찾지 못했습니다. ID 열 수를 확인하세요.");
   resp.forEach((a) => {
     a.length = nItems;
-    for (let j = 0; j < nItems; j++) if (a[j] === undefined) a[j] = " ";
+    for (let j = 0; j < nItems; j++) a[j] ??= " ";
   });
 
   const metaVals = (r) => (r ? splitResp(r).slice(0, nItems) : null);
@@ -173,7 +173,8 @@ const tableToSource = (rawRows, idColsArg) => {
     nItems,
     prefill: {
       key: metaVals(meta.key),
-      numOptions: metaVals(meta.opt)?.map((v) => parseInt(v, 10) || 0) ?? null,
+      numOptions:
+        metaVals(meta.opt)?.map((v) => Number.parseInt(v, 10) || 0) ?? null,
       scored: meta.inc
         ? splitResp(meta.inc)
             .slice(0, nItems)
@@ -202,7 +203,7 @@ const fixedToSource = (lines, idWidth) => {
   const nItems = Math.max(...resp.map((a) => a.length));
   if (!nItems) throw new Error("응답이 없습니다. ID 자릿수를 확인하세요.");
   resp.forEach((a) => {
-    for (let j = 0; j < nItems; j++) if (a[j] === undefined) a[j] = " ";
+    for (let j = 0; j < nItems; j++) a[j] ??= " ";
   });
   return {
     ids,
@@ -230,11 +231,11 @@ const testanToSource = (bytes) => {
   }
   const ascii = (b) => String.fromCharCode(...b);
   const ctl = ascii(lines[0]);
-  const n = parseInt(ctl.slice(0, 3), 10);
-  const w = parseInt(ctl.slice(8, 10), 10) || 0;
+  const n = Number.parseInt(ctl.slice(0, 3), 10);
+  const w = Number.parseInt(ctl.slice(8, 10), 10) || 0;
   const cells = (b) => ascii(b).padEnd(n, " ").slice(0, n).split("");
   const key = cells(lines[1]);
-  const opt = cells(lines[2]).map((c) => parseInt(c, 10) || 0);
+  const opt = cells(lines[2]).map((c) => Number.parseInt(c, 10) || 0);
   const inc = cells(lines[3]).map((c) => !/n/i.test(c));
   const ids = [];
   const resp = [];
@@ -296,7 +297,7 @@ const readSource = (bytes, filename, XLSX) => {
     }
     throw new Error("Excel 파일에 내용이 있는 시트가 없습니다.");
   }
-  const text = decodeText(bytes).replace(/\r\n?/g, "\n");
+  const text = decodeText(bytes).replaceAll(/\r\n?/g, "\n");
   if (isTestanDat(text)) return { kind: "testan", bytes };
   const lines = text.split("\n").filter((l) => l.trim() !== "");
   const share = (re) =>
