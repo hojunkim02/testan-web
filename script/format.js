@@ -8,7 +8,6 @@ const fx = (v, d) => {
     .replace(/^0(?=\.)/, "");
   return (v < 0 && Number(t) !== 0 ? "−" : "") + t;
 };
-const f2 = (v) => fx(v, 2);
 const f3 = (v) => fx(v, 3);
 const fnum = (v, d) => (Number.isInteger(v) ? String(v) : v.toFixed(d));
 
