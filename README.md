@@ -5,7 +5,7 @@
 
 ## 핵심 공식과 구현
 
-분석 로직(`script/analysis.js`)은 매뉴얼(성태제, 2000)의 공식을 그대로 구현한다.
+분석 로직(`script/app.js`의 `analyze`, 수식은 `script/formulas.js`)은 매뉴얼(성태제, 2000)의 공식을 그대로 구현한다.
 
 ### 문항 난이도
 
