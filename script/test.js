@@ -1,7 +1,8 @@
 "use strict";
 const fs = require("fs");
 const path = require("path");
-const { readSource, buildSource, analyze } = require("./app.js");
+const { readSource, buildSource } = require("./source.js");
+const { analyze } = require("./analysis.js");
 
 const dir = path.join(__dirname, "..", "sample-data");
 
