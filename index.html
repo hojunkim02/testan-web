@@ -8,7 +8,12 @@
     <link rel="icon" href="favicon.ico" sizes="16x16 32x32 48x48" />
     <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png" />
-    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="192x192"
+      href="icons/icon-192.png"
+    />
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#0f6cbd" />
     <link rel="apple-touch-icon" href="icons/icon-192.png" />
@@ -17,7 +22,9 @@
   <body>
     <header>
       <h1>TestAn Web <small class="edition">실습판</small></h1>
-      <p class="subtitle">고전검사이론(CTT) 문항분석 · 원본: TestAn 1.0 for Windows (성태제, 2000)</p>
+      <p class="subtitle">
+        고전검사이론(CTT) 문항분석 · 원본: TestAn 1.0 for Windows (성태제, 2000)
+      </p>
     </header>
     <main>
       <section class="panel" id="dropZone">
@@ -26,24 +33,45 @@
           <button id="loadDemo" class="btn">예시 자료 불러오기</button>
           <button id="reportAll" class="btn" disabled>Word 보고서 저장</button>
           <span class="spacer"></span>
-          <button id="themeBtn" class="btn icon-btn" aria-label="다크 모드 전환" title="다크 모드 전환"></button>
-          <button id="aboutBtn" class="btn icon-btn" aria-label="정보" title="정보">
+          <button
+            id="themeBtn"
+            class="btn icon-btn"
+            aria-label="다크 모드 전환"
+            title="다크 모드 전환"
+          ></button>
+          <button
+            id="aboutBtn"
+            class="btn icon-btn"
+            aria-label="정보"
+            title="정보"
+          >
             <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
-              <path d="M8 1.75a6.25 6.25 0 1 0 0 12.5A6.25 6.25 0 0 0 8 1.75zM.25 8a7.75 7.75 0 1 1 15.5 0A7.75 7.75 0 0 1 .25 8z" />
-              <path d="M8.75 5.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0zM7.25 8a.75.75 0 0 1 1.5 0v3.25a.75.75 0 0 1-1.5 0z" />
+              <path
+                d="M8 1.75a6.25 6.25 0 1 0 0 12.5A6.25 6.25 0 0 0 8 1.75zM.25 8a7.75 7.75 0 1 1 15.5 0A7.75 7.75 0 0 1 .25 8z"
+              />
+              <path
+                d="M8.75 5.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0zM7.25 8a.75.75 0 0 1 1.5 0v3.25a.75.75 0 0 1-1.5 0z"
+              />
             </svg>
           </button>
         </div>
-        <input type="file" id="fileInput" accept=".xlsx,.xls,.xlsm,.ods,.csv,.tsv,.txt,.dat" hidden />
+        <input
+          type="file"
+          id="fileInput"
+          accept=".xlsx,.xls,.xlsm,.ods,.csv,.tsv,.txt,.dat"
+          hidden
+        />
         <p class="hint" id="dropHint">
-          Excel(.xlsx, .xls), CSV, 텍스트(.txt), TestAn 응답자료(.dat)를 열 수 있습니다. 파일을 이 상자에 끌어다 놓아도 됩니다.
-          한 행에 한 학생, 첫 열(들)은 학번·이름, 그 뒤로 문항별 응답을 둡니다.
+          Excel(.xlsx, .xls), CSV, 텍스트(.txt), TestAn 응답자료(.dat)를 열 수
+          있습니다. 파일을 이 상자에 끌어다 놓아도 됩니다. 한 행에 한 학생, 첫
+          열(들)은 학번·이름, 그 뒤로 문항별 응답을 둡니다.
         </p>
         <div id="status" class="status"></div>
       </section>
 
       <div id="demoBanner" class="demo-banner" hidden>
-        예시 자료(TestAn 매뉴얼 answer.dat, 70문항·119명)를 분석하고 있습니다. 실습 결과로 제출하지 마세요.
+        예시 자료(TestAn 매뉴얼 answer.dat, 70문항·119명)를 분석하고 있습니다.
+        실습 결과로 제출하지 마세요.
       </div>
 
       <nav class="tabs" id="tabs" hidden>
@@ -61,19 +89,32 @@
         <div class="bulk">
           <label for="bulkKey">정답 한꺼번에 입력</label>
           <div class="bulk-line">
-            <input type="text" id="bulkKey" placeholder="예: 4313341213… 또는 엑셀 정답 행을 복사해 붙여넣기" autocomplete="off" />
+            <input
+              type="text"
+              id="bulkKey"
+              placeholder="예: 4313341213… 또는 엑셀 정답 행을 복사해 붙여넣기"
+              autocomplete="off"
+            />
             <button id="applyKey" class="btn">정답 적용</button>
           </div>
           <label for="bulkOpt">답지 수 한꺼번에 입력</label>
           <div class="bulk-line">
-            <input type="text" id="bulkOpt" placeholder="모든 문항이 같으면 4처럼 한 글자, 다르면 4444455552…처럼 문항 순서대로" autocomplete="off" />
+            <input
+              type="text"
+              id="bulkOpt"
+              placeholder="모든 문항이 같으면 4처럼 한 글자, 다르면 4444455552…처럼 문항 순서대로"
+              autocomplete="off"
+            />
             <button id="applyOpt" class="btn">답지 수 적용</button>
           </div>
           <div class="bulk-line">
             <span>분석 포함</span>
             <button id="incAll" class="btn">모두 포함</button>
             <button id="incNone" class="btn">모두 제외</button>
-            <span class="muted">개별 문항은 아래 표에서 고칩니다. 칸을 클릭해 숫자를 바꾸고, 화살표 키로 옮겨 다닐 수 있습니다.</span>
+            <span class="muted"
+              >개별 문항은 아래 표에서 고칩니다. 칸을 클릭해 숫자를 바꾸고,
+              화살표 키로 옮겨 다닐 수 있습니다.</span
+            >
           </div>
         </div>
         <div class="table-wrap setup-wrap">
@@ -99,7 +140,11 @@
         </div>
         <div class="stat-grid" id="statGrid"></div>
         <div class="chart-box">
-          <canvas id="chart" role="img" aria-label="검사점수 분포 그래프"></canvas>
+          <canvas
+            id="chart"
+            role="img"
+            aria-label="검사점수 분포 그래프"
+          ></canvas>
         </div>
         <div class="two-col">
           <div class="col">
@@ -144,9 +189,10 @@
           <button id="itemDocx" class="btn">Word로 저장</button>
         </div>
         <p class="legend">
-          <b class="alpha-up">굵은 글씨</b>의 ‘제외 시 α’는 그 문항을 빼면 검사 전체 α보다 신뢰도가 높아진다는 뜻이고,
-          <b class="neg">빨간 글씨</b>의 변별도(r)는 음수입니다.
-          ‘*’는 정답, ‘기타’는 무응답과 답지 범위 밖의 응답이며 기타 응답자가 없는 문항에서는 생략합니다.
+          <b class="alpha-up">굵은 글씨</b>의 ‘제외 시 α’는 그 문항을 빼면 검사
+          전체 α보다 신뢰도가 높아진다는 뜻이고, <b class="neg">빨간 글씨</b>의
+          변별도(r)는 음수입니다. ‘*’는 정답, ‘기타’는 무응답과 답지 범위 밖의
+          응답이며 기타 응답자가 없는 문항에서는 생략합니다.
         </p>
         <div class="table-wrap item-wrap">
           <table class="data-table item-table" id="itemTable"></table>
@@ -154,16 +200,44 @@
         <details class="glossary">
           <summary>지표 정의</summary>
           <dl>
-            <dt>난이도</dt><dd>정답자 수 R ÷ 전체 피험자 수 N</dd>
-            <dt>추측도</dt><dd>오답자 수 ÷ (답지 수 − 1) ÷ N. 오답자는 정답이 아닌 답지를 고른 피험자이며 무응답·기타는 빼고 센다.</dd>
-            <dt>교정난이도</dt><dd>난이도 − 추측도</dd>
-            <dt>변별도(r)</dt><dd>문항 점수(0, 1)와 총점의 상관계수. 총점에 그 문항이 들어 있다.</dd>
-            <dt>수정변별도</dt><dd>문항 점수와 ‘총점 − 그 문항 점수’의 상관계수</dd>
-            <dt>상하위 정답률 차</dt><dd>상위 27% 집단의 정답률 − 하위 27% 집단의 정답률</dd>
-            <dt>상·하위 27% 집단</dt><dd>같은 점수의 학생은 같은 집단에 넣는다. 위(아래)부터 점수별로 묶어 차례로 넣되, 어떤 점수 묶음의 가운데가 전체의 27% 지점을 넘으면 그 묶음부터는 넣지 않는다. 곧 점수 경계 가운데 27%에 가장 가까운 곳에서 자르므로(TestAn과 같은 방식) 집단 인원이 27%보다 많거나 적을 수 있다. 실제 인원은 점수 분석 탭에 표시된다.</dd>
-            <dt>제외 시 α</dt><dd>그 문항을 빼고 나머지 문항으로 계산한 Cronbach α</dd>
-            <dt>답지 응답비율</dt><dd>전체·상위 27%·하위 27% 집단에서 그 답지를 고른 비율. 상관계수는 답지 선택 여부(1, 0)와 총점의 상관이다.</dd>
-            <dt>오답지 매력도 기준</dt><dd>(1 − 난이도) ÷ (답지 수 − 1). 오답자가 오답지를 고르게 선택했을 때 오답지 하나가 받을 기대 비율로, 각 오답지의 전체 응답비율과 비교한다.</dd>
+            <dt>난이도</dt>
+            <dd>정답자 수 R ÷ 전체 피험자 수 N</dd>
+            <dt>추측도</dt>
+            <dd>
+              오답자 수 ÷ (답지 수 − 1) ÷ N. 오답자는 정답이 아닌 답지를 고른
+              피험자이며 무응답·기타는 빼고 센다.
+            </dd>
+            <dt>교정난이도</dt>
+            <dd>난이도 − 추측도</dd>
+            <dt>변별도(r)</dt>
+            <dd>
+              문항 점수(0, 1)와 총점의 상관계수. 총점에 그 문항이 들어 있다.
+            </dd>
+            <dt>수정변별도</dt>
+            <dd>문항 점수와 ‘총점 − 그 문항 점수’의 상관계수</dd>
+            <dt>상하위 정답률 차</dt>
+            <dd>상위 27% 집단의 정답률 − 하위 27% 집단의 정답률</dd>
+            <dt>상·하위 27% 집단</dt>
+            <dd>
+              같은 점수의 학생은 같은 집단에 넣는다. 위(아래)부터 점수별로 묶어
+              차례로 넣되, 어떤 점수 묶음의 가운데가 전체의 27% 지점을 넘으면 그
+              묶음부터는 넣지 않는다. 곧 점수 경계 가운데 27%에 가장 가까운
+              곳에서 자르므로(TestAn과 같은 방식) 집단 인원이 27%보다 많거나
+              적을 수 있다. 실제 인원은 점수 분석 탭에 표시된다.
+            </dd>
+            <dt>제외 시 α</dt>
+            <dd>그 문항을 빼고 나머지 문항으로 계산한 Cronbach α</dd>
+            <dt>답지 응답비율</dt>
+            <dd>
+              전체·상위 27%·하위 27% 집단에서 그 답지를 고른 비율. 상관계수는
+              답지 선택 여부(1, 0)와 총점의 상관이다.
+            </dd>
+            <dt>오답지 매력도 기준</dt>
+            <dd>
+              (1 − 난이도) ÷ (답지 수 − 1). 오답자가 오답지를 고르게 선택했을 때
+              오답지 하나가 받을 기대 비율로, 각 오답지의 전체 응답비율과
+              비교한다.
+            </dd>
           </dl>
         </details>
       </section>
@@ -175,26 +249,25 @@
         <h2>TestAn Web 실습판</h2>
         <p>고전검사이론(CTT)에 의한 검사 분석 프로그램</p>
         <p class="summary">
-          교육평가 수업 실습용. 추측도 · 교정난이도 · 수정변별도 · 문항 제외 시 신뢰도, Excel 입력, Word 보고서 저장.
+          교육평가 수업 실습용. 추측도 · 교정난이도 · 수정변별도 · 문항 제외 시
+          신뢰도, Excel 입력, Word 보고서 저장.
         </p>
         <p class="summary">
-          원본: TestAn 1.0 for Windows (VB6, 2000), 이화여자대학교 교육학과 성태제 교수 저서 부록 · 에버케이션<br />
+          원본: TestAn 1.0 for Windows (VB6, 2000), 이화여자대학교 교육학과
+          성태제 교수 저서 부록 · 에버케이션<br />
           웹 이식: hojunkim02 (github.com/hojunkim02/testan-web)
         </p>
-        <p class="summary">입력한 응답자료는 서버로 전송되지 않으며 모든 계산은 이 브라우저 안에서 이루어집니다.</p>
+        <p class="summary">
+          입력한 응답자료는 서버로 전송되지 않으며 모든 계산은 이 브라우저
+          안에서 이루어집니다.
+        </p>
         <button id="aboutClose" class="btn">닫기</button>
       </div>
     </div>
     <footer>
       <p>응답자료는 이 컴퓨터 밖으로 전송되지 않습니다.</p>
     </footer>
-    
-    
-    
-    
-    
-    
-    
+
     <script src="script/vendor/xlsx.full.min.js"></script>
     <script src="script/vendor/docx.js"></script>
     <script src="script/formulas.js"></script>
