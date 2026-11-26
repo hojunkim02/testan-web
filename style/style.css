@@ -1214,3 +1214,151 @@ h1 .edition {
     margin-bottom: 6px;
   }
 }
+
+/* 문항반응이론 */
+.irt-controls select {
+  min-width: 0;
+}
+.irt-charts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.irt-wrap {
+  max-height: 520px;
+}
+#irtCompare tr.current td {
+  font-weight: 700;
+  background: var(--accent-tint);
+}
+#irtItems tr.diverged td:not(.neg) {
+  color: var(--text-tertiary);
+}
+#irtItems tr.muted td {
+  color: var(--text-tertiary);
+}
+#irtFormula {
+  font-family: "Cambria Math", "Times New Roman", serif;
+  font-size: 14px;
+  color: var(--text);
+}
+.irt-charts.two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (max-width: 1000px) {
+  .irt-charts,
+  .irt-charts.two {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 이론별 하위 탭: 문항 분석 · 점수 분석 (알약 모양으로 상위 탭과 구분) */
+.subtabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 3px;
+  margin: 0 0 14px;
+  border: 1px solid var(--stroke-strong);
+  border-radius: 999px;
+  background: var(--card);
+}
+.subtabs button {
+  appearance: none;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  padding: 6px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.subtabs button:hover {
+  color: var(--text);
+  background: var(--card-hover);
+}
+.subtabs button:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 1px;
+}
+.subtabs button.active {
+  background: var(--accent);
+  color: var(--on-accent, #fff);
+  font-weight: 600;
+}
+.pane > .controls:first-child {
+  margin-top: 0;
+}
+
+/* 열 제목 정렬 */
+th.sortable {
+  cursor: pointer;
+  user-select: none;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--text-tertiary);
+}
+th.sortable:hover {
+  color: var(--accent);
+}
+th.sortable:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: -2px;
+}
+th.sortable[aria-sort="ascending"],
+th.sortable[aria-sort="descending"] {
+  color: var(--accent);
+  text-decoration: none;
+}
+.sort-ind {
+  font-size: 0.8em;
+}
+
+.controls .btn,
+.demo-row .btn {
+  white-space: nowrap;
+}
+.demo-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--stroke);
+}
+.demo-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.demo-sep {
+  width: 1px;
+  height: 20px;
+  background: var(--stroke-strong);
+  margin: 0 4px;
+}
+.demo-row select {
+  font: inherit;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--card-solid);
+  border: 1px solid var(--stroke-strong);
+  border-radius: var(--radius-s);
+  padding: 5px 6px;
+  max-width: 100%;
+  min-width: 0;
+}
+@media (max-width: 520px) {
+  .demo-sep {
+    display: none;
+  }
+  .demo-row select {
+    flex: 1 1 100%;
+  }
+}
+
+#tab-irt {
+  display: none !important;
+}

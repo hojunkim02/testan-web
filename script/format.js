@@ -8,6 +8,13 @@ const fx = (v, d) => {
     .replace(/^0(?=\.)/, "");
   return (v < 0 && Number(t) !== 0 ? "−" : "") + t;
 };
+const f2 = (v) => fx(v, 2);
+/** IRT 표기: 소수 셋째 자리, 앞자리 0 유지(1.234, 0.404), 음수는 수학 기호 */
+const fm = (v, d = 3) =>
+  v == null || !Number.isFinite(v)
+    ? "-"
+    : (v < 0 && Math.abs(v).toFixed(d) !== (0).toFixed(d) ? "−" : "") +
+      Math.abs(v).toFixed(d);
 const f3 = (v) => fx(v, 3);
 const fnum = (v, d) => (Number.isInteger(v) ? String(v) : v.toFixed(d));
 
@@ -16,42 +23,49 @@ const ITEM_METRIC_COLS = [
   {
     h: "난이도",
     tip: "P = R / N",
+    val: (it) => it.difficulty,
     get: (it) => f3(it.difficulty),
     mean: (s) => f3(s.meanDifficulty),
   },
   {
     h: "추측도",
     tip: "오답자 수 ÷ (답지 수 − 1) ÷ N",
+    val: (it) => it.guessing,
     get: (it) => f3(it.guessing),
     mean: (s) => f3(s.meanGuessing),
   },
   {
     h: "교정난이도",
     tip: "난이도 − 추측도",
+    val: (it) => it.correctedDifficulty,
     get: (it) => f3(it.correctedDifficulty),
     mean: (s) => f3(s.meanCorrectedDifficulty),
   },
   {
     h: "변별도(r)",
     tip: "문항 점수와 총점의 상관계수",
+    val: (it) => it.pointBiserial,
     get: (it) => f3(it.pointBiserial),
     mean: (s) => f3(s.meanPointBiserial),
   },
   {
     h: "수정변별도",
     tip: "문항 점수와 해당 문항을 뺀 총점의 상관계수",
+    val: (it) => it.correctedDiscrimination,
     get: (it) => f3(it.correctedDiscrimination),
     mean: (s) => f3(s.meanCorrectedDiscrimination),
   },
   {
     h: "상하위 정답률 차",
     tip: "상위 27% 정답률 − 하위 27% 정답률",
+    val: (it) => it.discrimination,
     get: (it) => f3(it.discrimination),
     mean: (s) => f3(s.meanDiscrimination),
   },
   {
     h: "제외 시 α",
     tip: "해당 문항을 뺀 나머지 문항의 Cronbach α",
+    val: (it) => it.alphaIfDeleted,
     get: (it) => f3(it.alphaIfDeleted),
     mean: (s) => f3(s.reliability),
   },
@@ -70,21 +84,11 @@ const circ = (v) => {
 const visibleOptions = (it) =>
   it.options.filter((o) => o.option !== "기타" || o.count > 0);
 
-/** 문항 정렬 */
-const sortItems = (items, mode) => {
-  const by = {
-    diffAsc: (a, b) => a.difficulty - b.difficulty,
-    diffDesc: (a, b) => b.difficulty - a.difficulty,
-    rDesc: (a, b) => b.pointBiserial - a.pointBiserial,
-    rcDesc: (a, b) => b.correctedDiscrimination - a.correctedDiscrimination,
-    dDesc: (a, b) => b.discrimination - a.discrimination,
-    alphaDesc: (a, b) => b.alphaIfDeleted - a.alphaIfDeleted,
-  }[mode];
-  const arr = [...items];
-  if (by)
-    arr.sort((a, b) => (a.scored === b.scored ? by(a, b) : a.scored ? -1 : 1));
-  return arr;
-};
+/** 화면에서 정한 순서(문항 번호 배열)대로 문항을 늘어놓는다. 순서가 없으면 문항 번호 순 */
+const orderItems = (items, order) =>
+  order
+    ? order.map((ix) => items.find((it) => it.index === ix)).filter(Boolean)
+    : [...items];
 
 const todayStr = () => {
   const d = new Date();
@@ -112,7 +116,8 @@ const chartPng = async (dist) => {
 
 /**
  * Word 보고서(.docx)를 만든다.
- * parts: { scores: bool, items: bool }, meta: { fileName, idLabel, itemSort }
+ * parts: { cttItem, cttScore, irtItem, irtScore }
+ * meta: { fileName, idLabel, itemOrder, scoreOrder, irt, irtItemRows, thetaRows } (화면의 정렬 순서)
  */
 const buildDocx = async (result, meta, parts) => {
   const D = docx;
@@ -139,6 +144,7 @@ const buildDocx = async (result, meta, parts) => {
     });
   const heading = (text, level = 1) =>
     new D.Paragraph({
+      keepNext: true, // 제목만 쪽 끝에 홀로 남지 않게
       spacing: { before: level === 1 ? 280 : 200, after: 120 },
       children: [run(text, { bold: true, size: level === 1 ? 26 : 22 })],
     });
@@ -180,7 +186,6 @@ const buildDocx = async (result, meta, parts) => {
       after: 200,
     });
 
-  let chap = 0;
   const intro = [
     new D.Paragraph({
       alignment: D.AlignmentType.CENTER,
@@ -193,106 +198,41 @@ const buildDocx = async (result, meta, parts) => {
     ),
   ];
   const sections = [];
-
-  if (parts.scores) {
-    chap++;
-    const c = [];
-    c.push(heading(`${chap}. 검사점수 분석`));
-    c.push(heading(`${chap}.1 기술통계`, 2));
-    const pairs = [
-      ["피험자 수", `${st.n}명`, "만점", `${st.maxScore}점`],
-      ["평균", fnum(st.mean, 3), "표준편차", fnum(st.sd, 3)],
-      ["분산", fnum(st.variance, 3), "중앙값", fnum(st.median, 1)],
-      ["최저점수", String(st.min), "최고점수", String(st.high)],
-      ["왜도", fnum(st.skewness, 3), "첨도", fnum(st.kurtosis, 3)],
-      ["신뢰도(Cronbach α)", f3(st.reliability), "측정오차", fnum(st.sem, 3)],
-      [
-        "상위 27% 집단",
-        `${result.upper.n}명 (최저 ${result.upper.min}점)`,
-        "하위 27% 집단",
-        `${result.lower.n}명 (최고 ${result.lower.max}점)`,
+  const push = (children, properties) =>
+    sections.push({
+      properties,
+      children: sections.length ? children : [...intro, ...children],
+    });
+  let chap = 0;
+  let tno = 0;
+  let fno = 0;
+  const tcap = (t) => caption(`<표 ${++tno}> ${t}`);
+  const fcap = (t) => caption(`[그림 ${++fno}] ${t}`);
+  const img = (data, w, h) =>
+    new D.Paragraph({
+      keepNext: true,
+      alignment: D.AlignmentType.CENTER,
+      children: [
+        new D.ImageRun({
+          type: "png",
+          data,
+          transformation: { width: w, height: h },
+        }),
       ],
-    ];
-    c.push(
-      table(
-        pairs.map(
-          (p) =>
-            new D.TableRow({
-              children: p.map((t, i) =>
-                cell(t, {
-                  shade: i % 2 === 0 ? HEAD : undefined,
-                  bold: i % 2 === 0,
-                }),
-              ),
-            }),
-        ),
-        [2200, 2300, 2200, 2300],
-      ),
-    );
-    c.push(heading(`${chap}.2 점수 분포`, 2));
-    const png = await chartPng(result.distribution);
-    c.push(
-      new D.Paragraph({
-        alignment: D.AlignmentType.CENTER,
-        children: [
-          new D.ImageRun({
-            type: "png",
-            data: png,
-            transformation: { width: 576, height: 288 },
-          }),
-        ],
-      }),
-    );
-    c.push(caption("[그림 1] 검사점수의 분포"));
-    c.push(
-      table(
-        [
-          headRow([
-            "점수",
-            "피험자 수",
-            "백분율(%)",
-            "누가 피험자 수",
-            "누가 백분율(%)",
-          ]),
-          ...result.distribution.map(
-            (d) =>
-              new D.TableRow({
-                children: [
-                  d.score,
-                  d.n,
-                  d.pct.toFixed(2),
-                  d.cumN,
-                  d.cumPct.toFixed(2),
-                ].map((t) => cell(t)),
-              }),
-          ),
-        ],
-        [1500, 1800, 1900, 1900, 1900],
-      ),
-    );
-    c.push(caption("<표 1> 검사점수의 백분율"));
-    c.push(heading(`${chap}.3 피험자별 점수`, 2));
-    c.push(
-      table(
-        [
-          headRow([meta.idLabel || "ID", "점수", "석차"]),
-          ...result.students.map(
-            (s) =>
-              new D.TableRow({
-                children: [s.id, s.raw, s.rank].map((t) => cell(t)),
-              }),
-          ),
-        ],
-        [4200, 2400, 2400],
-      ),
-    );
-    sections.push({ children: [...intro, ...c] });
-  }
+    });
+  const landscape = {
+    page: {
+      size: { orientation: D.PageOrientation.LANDSCAPE },
+      margin: { top: 1000, bottom: 1000, left: 900, right: 900 },
+    },
+  };
+  const RED = "C00000";
 
-  if (parts.items) {
+  /* ----- 고전검사이론: 문항 분석 ----- */
+  if (parts.cttItem) {
     chap++;
     const c = [];
-    c.push(heading(`${chap}. 문항분석`));
+    c.push(heading(`${chap}. 고전검사이론에 의한 문항분석`));
     c.push(
       para(
         `검사 전체의 신뢰도(Cronbach α)는 ${f3(st.reliability)}, 측정오차는 ${fnum(st.sem, 3)}이다. ` +
@@ -321,7 +261,7 @@ const buildDocx = async (result, meta, parts) => {
         ],
       }),
     );
-    sortItems(result.items, meta.itemSort).forEach((it) => {
+    orderItems(result.items, meta.itemOrder).forEach((it) => {
       const opts = visibleOptions(it);
       const span = opts.length;
       opts.forEach((o, k) => {
@@ -343,7 +283,7 @@ const buildDocx = async (result, meta, parts) => {
                   : isAlpha && it.alphaUp
                     ? "1F4E79"
                     : mi === R_COL && it.pointBiserial < 0
-                      ? "C00000"
+                      ? RED
                       : undefined,
               }),
             );
@@ -377,7 +317,7 @@ const buildDocx = async (result, meta, parts) => {
         ],
       ),
     );
-    c.push(caption("<표 2> 문항 및 답지 분석 결과"));
+    c.push(tcap("문항 및 답지 분석 결과"));
     c.push(heading("지표 정의", 2));
     [
       "난이도 P = 정답자 수 R ÷ 전체 피험자 수 N",
@@ -390,16 +330,275 @@ const buildDocx = async (result, meta, parts) => {
       "제외 시 α = 해당 문항을 뺀 나머지 문항으로 계산한 Cronbach α",
       "오답지 매력도 기준 = (1 − P) ÷ (답지 수 − 1)",
     ].forEach((t) => c.push(para("• " + t, { size: 17, after: 40 })));
-    const landscape = {
-      page: {
-        size: { orientation: D.PageOrientation.LANDSCAPE },
-        margin: { top: 1000, bottom: 1000, left: 900, right: 900 },
-      },
-    };
-    sections.push({
-      properties: landscape,
-      children: parts.scores ? c : [...intro, ...c],
-    });
+    push(c, landscape);
+  }
+
+  /* ----- 고전검사이론: 점수 분석 ----- */
+  if (parts.cttScore) {
+    chap++;
+    const c = [];
+    c.push(heading(`${chap}. 고전검사이론에 의한 점수분석`));
+    c.push(heading(`${chap}.1 기술통계`, 2));
+    const pairs = [
+      ["피험자 수", `${st.n}명`, "만점", `${st.maxScore}점`],
+      ["평균", fnum(st.mean, 3), "표준편차", fnum(st.sd, 3)],
+      ["분산", fnum(st.variance, 3), "중앙값", fnum(st.median, 1)],
+      ["최저점수", String(st.min), "최고점수", String(st.high)],
+      ["왜도", fnum(st.skewness, 3), "첨도", fnum(st.kurtosis, 3)],
+      ["신뢰도(Cronbach α)", f3(st.reliability), "측정오차", fnum(st.sem, 3)],
+      [
+        "상위 27% 집단",
+        `${result.upper.n}명 (최저 ${result.upper.min}점)`,
+        "하위 27% 집단",
+        `${result.lower.n}명 (최고 ${result.lower.max}점)`,
+      ],
+    ];
+    c.push(
+      table(
+        pairs.map(
+          (p) =>
+            new D.TableRow({
+              children: p.map((t, i) =>
+                cell(t, {
+                  shade: i % 2 === 0 ? HEAD : undefined,
+                  bold: i % 2 === 0,
+                }),
+              ),
+            }),
+        ),
+        [2200, 2300, 2200, 2300],
+      ),
+    );
+    c.push(heading(`${chap}.2 점수 분포`, 2));
+    c.push(img(await chartPng(result.distribution), 576, 288));
+    c.push(fcap("검사점수의 분포"));
+    c.push(
+      table(
+        [
+          headRow([
+            "점수",
+            "피험자 수",
+            "백분율(%)",
+            "누가 피험자 수",
+            "누가 백분율(%)",
+          ]),
+          ...result.distribution.map(
+            (d) =>
+              new D.TableRow({
+                children: [
+                  d.score,
+                  d.n,
+                  d.pct.toFixed(2),
+                  d.cumN,
+                  d.cumPct.toFixed(2),
+                ].map((t) => cell(t)),
+              }),
+          ),
+        ],
+        [1500, 1800, 1900, 1900, 1900],
+      ),
+    );
+    c.push(tcap("검사점수의 백분율"));
+    c.push(heading(`${chap}.3 피험자별 점수`, 2));
+    c.push(
+      table(
+        [
+          headRow([meta.idLabel || "ID", "점수", "석차"]),
+          ...(meta.scoreOrder || result.students).map(
+            (s) =>
+              new D.TableRow({
+                children: [s.id, s.raw, s.rank].map((t) => cell(t)),
+              }),
+          ),
+        ],
+        [4200, 2400, 2400],
+      ),
+    );
+    c.push(tcap("피험자별 점수"));
+    push(c);
+  }
+
+  /* ----- 문항반응이론 ----- */
+  const v = meta.irt;
+  const names = {
+    "1PL": "1모수 로지스틱",
+    "2PL": "2모수 로지스틱",
+    "3PL": "3모수 로지스틱",
+  };
+  const pngs = v && (parts.irtItem || parts.irtScore) ? await irtPngs(v) : null;
+
+  if (parts.irtItem && v) {
+    chap++;
+    const fit = v.fit;
+    const c = [];
+    const has3 = v.model === "3PL";
+    c.push(heading(`${chap}. 문항반응이론에 의한 문항분석`));
+    const div = v.items.filter((it) => it.diverged).map((it) => it.index);
+    c.push(
+      para(
+        `${names[v.model]} 모형으로 피험자 ${v.N}명, ${v.items.length}개 문항의 모수를 추정하였다. ` +
+          `추정 방법은 ${v.prior ? "주변최대사후(사전분포: a ~ 로그정규(0, 0.5)" + (has3 ? ", c ~ Beta(20/Q + 1, 20(1 − 1/Q) + 1)" : "") + ")" : "주변최대우도"}` +
+          `(EM, θ ~ N(0, 1), 구적점 61개, R mirt와 같은 방식)이며, 변별도 a는 척도 상수 D = ${v.D}로 나타냈다. ` +
+          `−2 로그우도는 ${(-2 * fit.logLik).toFixed(3)}, AIC ${fit.AIC.toFixed(3)}, BIC ${fit.BIC.toFixed(3)}이다.` +
+          (v.excluded.length
+            ? ` 추정에서 뺀 문항: ${v.excluded.map((e) => `${e.index}번(${e.why})`).join(", ")}.`
+            : "") +
+          (div.length
+            ? ` 추정치가 발산한 문항(${div.join(", ")}번)은 값을 고정하고 표준오차를 구하지 않았으며, 빨간 글씨로 표시하였다.`
+            : "") +
+          " 변별도 a가 음수인 문항의 모수도 빨간 글씨로 표시하였다.",
+        { size: 17, after: 160 },
+      ),
+    );
+    c.push(heading(`${chap}.1 모형 비교`, 2));
+    c.push(
+      table(
+        [
+          headRow(["모형", "모수 수", "−2 로그우도", "AIC", "BIC"]),
+          ...["1PL", "2PL", "3PL"].map(
+            (m) =>
+              new D.TableRow({
+                children: [
+                  names[m],
+                  v.fits[m].nest,
+                  (-2 * v.fits[m].logLik).toFixed(3),
+                  v.fits[m].AIC.toFixed(3),
+                  v.fits[m].BIC.toFixed(3),
+                ].map((t) => cell(t, { bold: m === v.model })),
+              }),
+          ),
+        ],
+        [2600, 1400, 1800, 1600, 1600],
+      ),
+    );
+    c.push(tcap("모형 비교 (굵은 글씨: 보고 모형)"));
+    c.push(heading(`${chap}.2 문항모수`, 2));
+    const rows =
+      meta.irtItemRows ||
+      [
+        ...v.items,
+        ...v.excluded.map((e) => ({ index: e.index, why: e.why, ex: true })),
+      ].sort((a, b) => a.index - b.index);
+    const SZ = 15;
+    const bfmt = (b) => (Math.abs(b) > 99 ? (b > 0 ? "> 99" : "< −99") : fm(b));
+    c.push(
+      table(
+        [
+          headRow(
+            [
+              "문항",
+              "변별도 a",
+              "SE",
+              "난이도 b",
+              "SE",
+              ...(has3 ? ["추측도 c", "SE"] : []),
+              "최대 정보 θ",
+              "최대 정보량",
+              "CTT 난이도",
+              "CTT 변별도(r)",
+              "비고",
+            ],
+            SZ,
+          ),
+          ...rows.map((it) => {
+            if (it.ex)
+              return new D.TableRow({
+                children: [
+                  cell(it.index, { size: SZ }),
+                  cell("추정 제외", {
+                    span: has3 ? 10 : 8,
+                    color: "888888",
+                    size: SZ,
+                  }),
+                  cell(it.why, { color: "888888", size: SZ }),
+                ],
+              });
+            const o = { size: SZ, color: it.flag ? RED : undefined };
+            return new D.TableRow({
+              children: [
+                cell(it.index, { size: SZ }),
+                cell(fm(it.a), o),
+                cell(fm(it.se_a), o),
+                cell(bfmt(it.b), o),
+                cell(fm(it.se_b), o),
+                ...(has3 ? [cell(fm(it.c), o), cell(fm(it.se_c), o)] : []),
+                cell(fm(it.maxTheta), o),
+                cell(fm(it.maxInfo), o),
+                cell(f3(it.p), { size: SZ }),
+                cell(f3(it.r), { size: SZ }),
+                cell(
+                  it.diverged ? "발산(값 고정)" : it.a < 0 ? "변별도 음수" : "",
+                  { size: SZ },
+                ),
+              ],
+            });
+          }),
+        ],
+        has3
+          ? [600, 850, 700, 850, 700, 850, 700, 900, 900, 900, 1000, 1050]
+          : [650, 1000, 800, 1000, 800, 1000, 1000, 1000, 1100, 1150],
+      ),
+    );
+    c.push(tcap("문항모수 추정치"));
+    c.push(
+      para(
+        "최대 정보 θ는 문항정보가 가장 큰 능력 수준이고 최대 정보량은 그때의 문항정보이다. 1·2모수 모형에서는 최대 정보 θ가 난이도 b와 같고, 3모수 모형에서는 추측도 때문에 b보다 조금 높은 곳에 있다(Lord, 1980).",
+        { size: 17, after: 160 },
+      ),
+    );
+    c.push(heading(`${chap}.3 문항특성곡선과 문항정보함수`, 2));
+    c.push(img(pngs.icc, 560, 300));
+    c.push(fcap("문항특성곡선(전체 문항)"));
+    c.push(img(pngs.iinfo, 560, 300));
+    c.push(fcap("문항정보함수(전체 문항)"));
+    push(c);
+  }
+
+  if (parts.irtScore && v) {
+    chap++;
+    const c = [];
+    c.push(heading(`${chap}. 문항반응이론에 의한 능력분석`));
+    c.push(
+      para(
+        `${names[v.model]} 모형의 문항모수로 피험자의 능력 θ를 기대사후(EAP) 방법으로 추정하였다. ` +
+          `검사정보는 θ = ${fm(pngs.maxTheta, 2)}에서 ${fm(pngs.maxInfo, 3)}로 가장 크며, 이때 측정의 표준오차는 ${fm(1 / Math.sqrt(pngs.maxInfo), 3)}이다. ` +
+          `진점수는 능력 추정치 θ̂에서 기대되는 검사점수 τ(θ̂) = Σ P(θ̂)` +
+          (v.constScore ? ` + ${v.constScore}(전원 정답 문항 수)` : "") +
+          "이다.",
+        { size: 17, after: 160 },
+      ),
+    );
+    c.push(heading(`${chap}.1 검사정보함수와 측정의 표준오차`, 2));
+    c.push(img(pngs.tif, 560, 300));
+    c.push(fcap("검사정보함수"));
+    c.push(img(pngs.se, 560, 300));
+    c.push(fcap("측정의 표준오차"));
+    c.push(heading(`${chap}.2 검사특성곡선과 진점수`, 2));
+    c.push(img(pngs.tcc, 560, 300));
+    c.push(fcap("검사특성곡선 (점: 피험자의 능력 추정치와 총점)"));
+    c.push(heading(`${chap}.3 피험자 능력 추정치`, 2));
+    c.push(
+      table(
+        [
+          headRow([v.idLabel || "ID", "총점", "능력 θ (EAP)", "SE", "진점수"]),
+          ...(meta.thetaRows || v.students).map(
+            (s) =>
+              new D.TableRow({
+                children: [
+                  s.id,
+                  s.raw,
+                  fm(s.theta),
+                  fm(s.se),
+                  fm(s.tscore),
+                ].map((t) => cell(t)),
+              }),
+          ),
+        ],
+        [3000, 1400, 1700, 1400, 1500],
+      ),
+    );
+    c.push(tcap("피험자 능력 추정치"));
+    push(c);
   }
 
   const doc = new D.Document({
@@ -419,7 +618,7 @@ const buildDocx = async (result, meta, parts) => {
 /** Excel 결과(.xlsx): 피험자 점수, 점수 분포, 문항 분석, 답지 분석 시트 */
 const buildXlsx = (result, idLabel = "ID") => {
   const st = result.stats;
-  const r3 = (v) => Math.round(v * 1000) / 1000;
+  const r3 = (v) => Number(v.toFixed(3)); // 화면 표시(toFixed, TestAn과 일치)와 같은 반올림
   const wb = XLSX.utils.book_new();
   const add = (name, aoa, widths) => {
     const ws = XLSX.utils.aoa_to_sheet(aoa);
@@ -537,6 +736,136 @@ const buildXlsx = (result, idLabel = "ID") => {
       ),
     ],
     [6, 6, 6, 10, 8, 10, 10, 14],
+  );
+  const out = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+  return new Blob([out], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+};
+
+/** IRT 그림을 보고서용 PNG로: 문항특성곡선, 문항정보, 검사정보, 표준오차, 검사특성곡선 */
+const irtPngs = async (v) => {
+  const cv = () => document.createElement("canvas");
+  const style = {
+    pal: { axis: "#555555", text: "#222222", grid: "#E3E3E3" },
+    accent: "#2F5D8A",
+    faint: "#BBBBBB",
+    w: 640,
+    h: 340,
+    dpr: 2.5,
+    background: "#FFFFFF",
+  };
+  const item = [cv(), cv()];
+  const test = [cv(), cv(), cv()];
+  drawIrtItemCharts(v, "all", item, style);
+  const mx = drawIrtTestCharts(v, test, style);
+  const png = async (c) =>
+    new Uint8Array(
+      await (
+        await new Promise((res) => c.toBlob(res, "image/png"))
+      ).arrayBuffer(),
+    );
+  const [icc, iinfo, tif, se, tcc] = await Promise.all(
+    [...item, ...test].map(png),
+  );
+  return { icc, iinfo, tif, se, tcc, ...mx };
+};
+
+/** IRT Excel: 모형 비교, 문항모수, 능력 추정치 */
+const buildIrtXlsx = (v) => {
+  const r3 = (x) =>
+    x == null || !Number.isFinite(x) ? "" : Number(x.toFixed(3));
+  const wb = XLSX.utils.book_new();
+  const add = (name, aoa, widths) => {
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws["!cols"] = widths.map((w) => ({ wch: w }));
+    XLSX.utils.book_append_sheet(wb, ws, name);
+  };
+  const has3 = v.model === "3PL";
+  add(
+    "IRT 문항모수",
+    [
+      [
+        `모형 ${v.model} · D = ${v.D} · ${v.prior ? "사전분포 사용" : "최대우도"} · 피험자 ${v.N}명`,
+      ],
+      [
+        "문항",
+        "변별도 a",
+        "SE(a)",
+        "난이도 b",
+        "SE(b)",
+        ...(has3 ? ["추측도 c", "SE(c)"] : []),
+        "최대 정보 θ",
+        "최대 정보량",
+        "CTT 난이도",
+        "CTT 변별도(r)",
+        "비고",
+      ],
+      ...[
+        ...v.items,
+        ...v.excluded.map((e) => ({ index: e.index, why: e.why, ex: true })),
+      ]
+        .sort((a, b) => a.index - b.index)
+        .map((it) =>
+          it.ex
+            ? [
+                it.index,
+                "",
+                "",
+                "",
+                "",
+                ...(has3 ? ["", ""] : []),
+                "",
+                "",
+                "",
+                "",
+                `추정 제외(${it.why})`,
+              ]
+            : [
+                it.index,
+                r3(it.a),
+                r3(it.se_a),
+                r3(it.b),
+                r3(it.se_b),
+                ...(has3 ? [r3(it.c), r3(it.se_c)] : []),
+                r3(it.maxTheta),
+                r3(it.maxInfo),
+                r3(it.p),
+                r3(it.r),
+                it.diverged ? "발산(값 고정)" : it.a < 0 ? "변별도 음수" : "",
+              ],
+        ),
+    ],
+    [6, 10, 8, 10, 8, ...(has3 ? [10, 8] : []), 11, 11, 11, 14, 16],
+  );
+  add(
+    "IRT 능력추정",
+    [
+      [v.idLabel || "ID", "총점", "능력 θ(EAP)", "SE", "진점수"],
+      ...v.students.map((s) => [
+        s.id,
+        s.raw,
+        r3(s.theta),
+        r3(s.se),
+        r3(s.tscore),
+      ]),
+    ],
+    [20, 8, 12, 8, 10],
+  );
+  add(
+    "IRT 모형비교",
+    [
+      ["모형", "모수 수", "-2 로그우도", "AIC", "BIC", "수렴"],
+      ...["1PL", "2PL", "3PL"].map((m) => [
+        m,
+        v.fits[m].nest,
+        r3(-2 * v.fits[m].logLik),
+        r3(v.fits[m].AIC),
+        r3(v.fits[m].BIC),
+        v.fits[m].converged ? "예" : "아니오",
+      ]),
+    ],
+    [8, 8, 12, 10, 10, 6],
   );
   const out = XLSX.write(wb, { bookType: "xlsx", type: "array" });
   return new Blob([out], {
