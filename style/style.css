@@ -31,7 +31,6 @@
   --scrim: rgba(0, 0, 0, 0.3);
   --tip-bg: rgba(36, 36, 36, 0.94);
   --duration-1: 100ms;
-  --duration-2: 150ms;
   --curve-decel: cubic-bezier(0, 0, 0, 1); /* Fluent decelerate curve */
 }
 /* Fluent 2 dark theme tokens */
@@ -200,36 +199,6 @@ main {
   outline: 2px solid #fff;
   outline-offset: 1px;
 }
-/* Split buttons — Fluent 2 split button */
-.split-btn {
-  position: relative;
-  display: inline-flex;
-}
-.split-btn .btn {
-  margin: 0;
-}
-.split-btn .split-main {
-  border-radius: var(--radius-s) 0 0 var(--radius-s);
-  border-right: none;
-}
-.split-btn .split-chev {
-  border-radius: 0 var(--radius-s) var(--radius-s) 0;
-  min-width: 32px;
-  padding: 0 6px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-.split-btn .split-chev svg {
-  fill: var(--text);
-  transition: transform var(--duration-2) var(--curve-decel);
-}
-.split-btn .split-chev.open svg {
-  transform: rotate(180deg);
-}
-.split-btn .split-chev:hover svg {
-  fill: var(--accent-hover);
-}
 /* Icon button — Fluent 2 circular icon button */
 .icon-btn {
   min-width: 32px;
@@ -245,57 +214,6 @@ main {
 }
 .icon-btn:hover svg {
   fill: var(--accent-hover);
-}
-/* Dropdown menus — Fluent 2 menu flyout */
-.menu-wrap {
-  position: relative;
-}
-.menu {
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
-  display: flex;
-  flex-direction: column;
-  min-width: 160px;
-  padding: 4px;
-  background: var(--card-solid);
-  border: 1px solid var(--stroke);
-  border-radius: var(--radius-m);
-  box-shadow: var(--shadow-16);
-  z-index: 40;
-  animation: menu-in var(--duration-2) var(--curve-decel);
-}
-@keyframes menu-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-}
-.menu-item {
-  appearance: none;
-  background: none;
-  border: none;
-  border-radius: var(--radius-s);
-  padding: 6px 10px;
-  min-height: 32px;
-  font: inherit;
-  font-size: 14px;
-  line-height: 20px;
-  text-align: left;
-  color: var(--text);
-  cursor: pointer;
-  transition: background var(--duration-1) var(--curve-decel);
-}
-.menu-item:hover {
-  background: var(--card-hover);
-}
-.menu-item:active {
-  background: var(--card-pressed);
-  color: var(--accent-active);
-}
-.menu-item:focus-visible {
-  outline: 2px solid var(--text);
-  outline-offset: -2px;
 }
 .controls {
   display: flex;
@@ -557,111 +475,6 @@ footer {
   font-size: 12px;
   padding: 20px;
 }
-.wiz-step {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-  flex-wrap: wrap;
-  padding: 6px 0 12px;
-}
-.wiz-step label {
-  display: inline-flex;
-  gap: 6px;
-  align-items: center;
-  color: var(--text-secondary);
-  font-size: 14px;
-}
-.wiz-table {
-  flex: 1;
-  max-height: 320px;
-}
-.wiz-footer {
-  margin-top: 14px;
-  justify-content: flex-end;
-}
-.modal-wide {
-  max-width: 1000px;
-}
-.edit-grid-wrap {
-  max-height: 55vh;
-  margin: 0 0 14px;
-}
-.grid-input {
-  width: 100%;
-  min-width: 34px;
-  max-width: 42px;
-  padding: 3px 4px;
-  border: 1px solid transparent;
-  border-radius: var(--radius-s);
-  background: transparent;
-  font: inherit;
-  font-size: 12px;
-  text-align: center;
-  color: var(--text);
-  transition:
-    background var(--duration-1) var(--curve-decel),
-    border-color var(--duration-1) var(--curve-decel);
-}
-.grid-input:hover {
-  background: var(--card-hover);
-}
-.grid-input:focus {
-  outline: none;
-  background: var(--card-solid);
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent);
-}
-.grid-id {
-  max-width: 90px;
-  text-align: left;
-}
-.meta-label {
-  color: var(--text-secondary);
-  font-weight: 600;
-}
-/* 편집 그리드 행 삭제 — 스티키 열로 항상 노출 */
-.edit-grid-wrap .data-table thead th:last-child,
-.edit-grid-wrap .data-table td:last-child {
-  position: sticky;
-  right: 0;
-}
-.edit-grid-wrap .data-table thead th:last-child {
-  background: var(--mica);
-}
-.edit-grid-wrap .data-table td:last-child {
-  background: var(--card-solid);
-  box-shadow: inset 1px 0 0 var(--stroke);
-}
-.edit-grid-wrap .data-table tbody tr:hover td:last-child {
-  background: var(--accent-tint);
-  box-shadow: inset 1px 0 0 var(--stroke);
-}
-.row-del {
-  appearance: none;
-  background: none;
-  border: none;
-  border-radius: var(--radius-s);
-  min-width: 28px;
-  min-height: 28px;
-  padding: 4px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: background var(--duration-1) var(--curve-decel);
-}
-.row-del svg {
-  fill: currentColor;
-}
-.row-del:hover {
-  background: var(--error-tint);
-  color: var(--error);
-}
-.row-del:focus-visible {
-  outline: 2px solid var(--text);
-  outline-offset: 1px;
-}
 .controls .summary {
   flex-basis: 100%;
   margin: 2px 0 0;
@@ -678,14 +491,6 @@ footer {
   pointer-events: none;
   white-space: pre;
   box-shadow: var(--shadow-8);
-}
-@media (max-width: 1024px) {
-  .modal-wide {
-    max-width: 96%;
-  }
-  .edit-grid-wrap {
-    max-height: 48vh;
-  }
 }
 @media (max-width: 640px) {
   header {
@@ -708,14 +513,8 @@ footer {
   .controls .btn {
     flex: 1 1 auto;
   }
-  .controls .split-btn {
-    flex: 1 1 auto;
-  }
   .controls .icon-btn {
     flex: 0 0 auto;
-  }
-  .menu {
-    max-width: calc(100vw - 32px);
   }
   .tabs {
     overflow-x: auto;
@@ -745,12 +544,6 @@ footer {
     padding: 14px 12px;
     max-height: 92vh;
   }
-  .wiz-table {
-    max-height: 40vh;
-  }
-  .grid-id {
-    max-width: 72px;
-  }
   footer {
     padding: 12px;
     font-size: 11px;
@@ -771,16 +564,6 @@ footer {
   .data-table th,
   .data-table td {
     padding: 8px 10px;
-  }
-  .grid-input {
-    min-width: 40px;
-    padding: 6px 2px;
-    font-size: 14px;
-  }
-  .row-del {
-    min-height: 36px;
-    min-width: 36px;
-    padding: 6px;
   }
   .btn.icon-btn {
     padding: 0;
@@ -1150,9 +933,6 @@ footer {
   background: var(--mica);
   font-weight: 600;
   border-bottom: 1px solid var(--stroke-strong);
-}
-.item-table td.alpha-total {
-  color: var(--text);
 }
 .item-table tbody.unscored td {
   color: var(--text-tertiary);

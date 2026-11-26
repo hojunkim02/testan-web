@@ -8,7 +8,6 @@ const fx = (v, d) => {
     .replace(/^0(?=\.)/, "");
   return (v < 0 && Number(t) !== 0 ? "−" : "") + t;
 };
-const f2 = (v) => fx(v, 2);
 /** IRT 표기: 소수 셋째 자리, 앞자리 0 유지(1.234, 0.404), 음수는 수학 기호 */
 const fm = (v, d = 3) =>
   v == null || !Number.isFinite(v)
