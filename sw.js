@@ -11,6 +11,7 @@ const ASSETS = [
   "./script/source.js",
   "./script/analysis.js",
   "./script/chart.js",
+  "./script/irt.js",
   "./script/format.js",
   "./script/app.js",
   "./sample-data/answer.dat",
